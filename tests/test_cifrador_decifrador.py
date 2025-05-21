@@ -1,15 +1,35 @@
 from src.cifrador_decifrador import criptografar_vigenere, descriptografar_vigenere, gerar_keystream
 
 def test_criptografar_vigenere():
-    plaintext = "EXEMPLO"
+    plaintext = "EXEMPLO" # Letra maiúscula sem espaço
     key = "KEY"
-    assert (criptografar_vigenere(plaintext, key) == "OBCWTJY")
+    teste_1 = (criptografar_vigenere(plaintext, key) == "OBCWTJY")
+
+    plaintext = "EXEMPLO EXEMPLO" # Letra maiúscula com espaço
+    key = "KEY"
+    teste_2 = (criptografar_vigenere(plaintext, key) == "OBCWTJY IVOQNVS")
+
+    plaintext = "exemplo" # Letra minúscula
+    key = "KEY"
+    teste_3 = (criptografar_vigenere(plaintext, key) == "OBCWTJY") # Cifra gerada sempre em upper case
+
+    assert (teste_1 and teste_2 and teste_3)
 
 
 def test_descriptografar_vigenere():
-    ciphertext = "OBCWTJY"
+    ciphertext = "OBCWTJY" # Letra maiúscula sem espaço
     key = "KEY"
-    assert (descriptografar_vigenere(ciphertext, key) == "EXEMPLO")
+    teste_1 = (descriptografar_vigenere(ciphertext, key) == "EXEMPLO")
+
+    ciphertext = "OBCWTJY IVOQNVS" # Letra maiúscula com espaço
+    key = "KEY"
+    teste_2 = (descriptografar_vigenere(ciphertext, key) == "EXEMPLO EXEMPLO")
+
+    ciphertext = "obcwtjy" # Letra minúscula
+    key = "KEY"
+    teste_3 = (descriptografar_vigenere(ciphertext, key) == "EXEMPLO") # Plaintext gerado sempre em upper case
+
+    assert (teste_1 and teste_2 and teste_3)
 
 
 def test_gerar_keystream():
