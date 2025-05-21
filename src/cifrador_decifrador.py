@@ -25,11 +25,22 @@ def gerar_keystream(plaintext: str, key: str) -> str:
 
 
 def criptografar_vigenere(plaintext: str, key: str) -> str:
+    """
+    Criptografa um texto usando a cifra de Vignère. Consiste em deslocar cada caracte-
+    re do plaintext em posições de acordo com o caractere correspondente na keystream.
+
+    Parâmetros:
+        plaintext (str): O texto a ser cifrado.
+        key (str): A chave de Vigenère.
+
+    Retorna:
+        str: O texto cifrado.
+    """
     plaintext, key = map(str.upper, [plaintext, key])
     keystream = gerar_keystream(plaintext, key)
     ciphertext = ""
 
-    # Iteração com índice pra correspondência de caracteres do keystream e plaintext
+    # Iteração com índice i permite correspondência de caracteres do keystream e plaintext
     for i in range(len(plaintext)):
         deslocamento = ord(keystream[i]) - ord('A') # Decimal de 'A' é a base de cálculo
         nova_posicao = ord(plaintext[i]) + deslocamento # Posição do char cifrado na tabela ASCII
@@ -44,15 +55,26 @@ def criptografar_vigenere(plaintext: str, key: str) -> str:
 
 
 def descriptografar_vigenere(ciphertext:str, key: str) -> str:
-    # Conceito de des-deslocar
+    """
+    Descriptografa um ciphertext gerado pela cifra de Vignère. Lógica simples consiste
+    em "deslocar ao contrário". Sabendo que a cifra avançou posições pra cada caracte-
+    re no plaintext de acordo com o keystream, basta desfazer o deslocamento voltando.
+
+    Parâmetros:
+        ciphertext (str): O texto cifrado.
+        key (str): A chave de Vigenère.
+
+    Retorna:
+        str: O plaintext descriptografado.
+    """
     ciphertext, key = map(str.upper, [ciphertext, key])
     keystream = gerar_keystream(ciphertext, key)
     plaintext = ""
 
     for i in range(len(ciphertext)):
-        # Sabendo que |x-y| = |y-x|, pegar o deslocamento contrário é inverter a order das parcelas
+        # Sabendo que |x-y| = |y-x|, pegar o deslocamento contrário é inverter a ordem das parcelas
         deslocamento = ord('A') - ord(keystream[i]) # Deslocamento no sentido contrário
-        nova_posicao = ord(ciphertext[i]) + deslocamento
+        nova_posicao = ord(ciphertext[i]) + deslocamento # Posição do char decifrado na tabela ASCII
 
         # Quando posição fica abaixo de 65, precisa subir 26 posições e continua deslocamento
         if (nova_posicao < 65):
