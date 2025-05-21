@@ -34,8 +34,9 @@ def criptografar_vigenere(plaintext: str, key: str) -> str:
         deslocamento = ord(keystream[i]) - ord('A') # Decimal de 'A' é a base de cálculo
         nova_posicao = ord(plaintext[i]) + deslocamento # Posição do char cifrado na tabela ASCII
 
-        if (nova_posicao > 90): 
-            nova_posicao -= 26 # "Recomeça" deslocamento a partir de 'A' se passar de 90 ('Z')
+        # Quando posição passa de 90, volta pra 'A' (-26 posições) e continua deslocamento
+        if (nova_posicao > 90):
+            nova_posicao -= 26 # Volta a mapear uma letra maiúscula
 
         char_cifrado = chr(nova_posicao)
         ciphertext += char_cifrado
@@ -43,4 +44,24 @@ def criptografar_vigenere(plaintext: str, key: str) -> str:
 
 
 def descriptografar_vigenere(ciphertext:str, key: str) -> str:
-    pass
+    # Conceito de des-deslocar
+    ciphertext, key = map(str.upper, [ciphertext, key])
+    keystream = gerar_keystream(ciphertext, key)
+    plaintext = ""
+
+    for i in range(len(ciphertext)):
+        # Sabendo que |x-y| = |y-x|, pegar o deslocamento contrário é inverter a order das parcelas
+        deslocamento = ord('A') - ord(keystream[i]) # Deslocamento no sentido contrário
+        nova_posicao = ord(ciphertext[i]) + deslocamento
+
+        # Quando posição fica abaixo de 65, precisa subir 26 posições e continua deslocamento
+        if (nova_posicao < 65):
+            nova_posicao += 26 # Volta a mapear uma letra maiúscula
+
+        char_decifrado = chr(nova_posicao)
+        plaintext += char_decifrado
+    return plaintext
+
+# print(gerar_keystream("TESTE", "KEY"))
+# print(criptografar_vigenere("TESTE", "KEY"))
+# print(descriptografar_vigenere("DIQDI", "KEY"))
