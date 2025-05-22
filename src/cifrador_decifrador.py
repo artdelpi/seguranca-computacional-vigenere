@@ -91,6 +91,5 @@ def descriptografar_vigenere(ciphertext:str, key: str) -> str:
     return plaintext
 
 # print(gerar_keystream("TESTE", "KEY"))
-print(criptografar_vigenere("EXEMPLO EXEMPLO", "KEY"))
-plaintext = "exemplo" # Letra minúscula
+# print(criptografar_vigenere("EXEMPLO EXEMPLO", "KEY"))
 # print(descriptografar_vigenere("DIQDI", "KEY"))
