@@ -15,7 +15,7 @@ def encontrar_repeticoes(ciphertext:str, tamanho_grupo=3):
     Exemplo: "ABCDEFGHI" vai até o índice 8 e o último grupo é "GHI", que vai do índice 6 ao 8. Assim, o valor
     de i no for só precisaria ir até 6, porque o elemento de índice 8 seria compreendido por ciphertext[6:6+3].
     """
-    repeticoes_por_grupo = dict()
+    repeticoes_por_grupo = dict() # Posições de repetições dos grupos no ciphertext (Índice da primeira letra do grupo)
     ciphertext = remover_nao_letras(ciphertext)
 
     for i in range(len(ciphertext) - (tamanho_grupo+1)): # Decrementa tamanho_grupo+1 e evita IndexError
@@ -35,8 +35,16 @@ def encontrar_espacamentos(repeticoes_por_grupo:dict) -> list:
     """
     Encontrar os espaçamentos revela múltiplos do tamanho da chave. 
     Sabendo que a chave é cíclica, o espaçamento entre repetições deve ser múltiplo do tamanho da chave.
+
+    Como as posições são encontradas à medida que o valor do índice aumenta, a disposição nas listas é crescente.
+    Portanto, sem motivo de tirar módulo pra pegar a distância, basta pegar lista[índice+1] - lista[índice]
     """
-    pass
+    espacamentos = list()
+
+    for posicoes in repeticoes_por_grupo.values():
+        for i in range(len(posicoes) - 1): # -1 porque pega 2 a 2. Nesse caso, já passou por tudo quando for (len-1)
+            espacamentos.append(posicoes[i+1]-posicoes[i]) # Ex: [1, 3, 4] -> [2, 1]
+    return espacamentos
 
 
 def encontrar_divisores(espacamentos:list) -> list:
@@ -44,7 +52,14 @@ def encontrar_divisores(espacamentos:list) -> list:
     Encontrar os divisores dos espaçamentos mostra quais são os possíveis tamanhos da chave.
     Pra isso, basta tirar o resto dos espaçamentos com os tamanhos possíveis da chave.
     """
-    pass
+    divisores = list()
+
+    # Pega os divisores de cada valor de espaçamento e monta uma lista
+    for divisor in range(2, 21): # Verifica divisores/tamanhos de chave de tamanho 2 a 20 (Pula 0 e 1 como divisores)
+        for espacamento in espacamentos:
+            if (espacamento % divisor == 0): # Insere divisor na lista caso divida algum espaçamento específico
+                divisores.append(divisor)
+    return divisores
 
 
 texto = (
@@ -62,3 +77,4 @@ texto = (
 )
 
 #print(encontrar_repeticoes(texto))
+#print(encontrar_espacamentos(encontrar_repeticoes(texto)))
