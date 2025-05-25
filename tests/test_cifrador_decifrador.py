@@ -181,4 +181,3 @@ def test_gerar_keystream():
     teste_3 = (gerar_keystream(plaintext, key) == keystream_esperado)
 
     assert (teste_1 and teste_2 and teste_3)
-
