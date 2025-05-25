@@ -54,7 +54,6 @@ def criptografar_vigenere(plaintext: str, key: str) -> str:
 
             char_cifrado = chr(nova_posicao)
             ciphertext += char_cifrado
-    print(ciphertext)
     return ciphertext
 
 
