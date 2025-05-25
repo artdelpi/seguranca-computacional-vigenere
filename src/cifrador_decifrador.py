@@ -16,11 +16,11 @@ def gerar_keystream(plaintext: str, key: str) -> str:
     key_index = 0 # Com rigor, na verdade o índice da chave é key_index % len(key)
 
     for i in range(len(plaintext)):
-        if (plaintext[i] != " "):
+        if (plaintext[i].isalpha()):
             keystream += key[key_index % len(key)] # Mantém índice < len(key)
             key_index += 1 # "Avança" de caracter na chave
         else:
-            keystream += " "
+            keystream += " " # Concatena espaço se caracter for não-letra
     return keystream.upper()
 
 
@@ -42,8 +42,8 @@ def criptografar_vigenere(plaintext: str, key: str) -> str:
 
     # Iteração com índice i permite correspondência de caracteres do keystream e plaintext
     for i in range(len(plaintext)):
-        if (plaintext[i] == " "):
-            ciphertext += " " # Não desloca caractere de espaço pra montar a cifra, apenas concatena
+        if (plaintext[i] in (" ", ".", ",", ";", "-", "!", "'")):
+            ciphertext += plaintext[i] # Não cifra caracteres especiais e mantém no ciphertext
         else: 
             deslocamento = ord(keystream[i]) - ord('A') # Decimal de 'A' é a base de cálculo
             nova_posicao = ord(plaintext[i]) + deslocamento # Posição do char cifrado na tabela ASCII
@@ -54,6 +54,7 @@ def criptografar_vigenere(plaintext: str, key: str) -> str:
 
             char_cifrado = chr(nova_posicao)
             ciphertext += char_cifrado
+    print(ciphertext)
     return ciphertext
 
 
@@ -75,8 +76,8 @@ def descriptografar_vigenere(ciphertext:str, key: str) -> str:
     plaintext = ""
 
     for i in range(len(ciphertext)):
-        if (ciphertext[i] == " "):
-            plaintext += " " # Não desloca caractere de espaço pra montar a cifra, apenas concatena
+        if (ciphertext[i] in (" ", ".", ",", ";", "-", "!", "'")):
+            plaintext += ciphertext[i] # Não desloca caractere de espaço pra montar a cifra, apenas concatena
         else:
             # Sabendo que |x-y| = |y-x|, pegar o deslocamento contrário é inverter a ordem das parcelas
             deslocamento = ord('A') - ord(keystream[i]) # Deslocamento no sentido contrário
@@ -89,7 +90,3 @@ def descriptografar_vigenere(ciphertext:str, key: str) -> str:
             char_decifrado = chr(nova_posicao)
             plaintext += char_decifrado
     return plaintext
-
-# print(gerar_keystream("TESTE", "KEY"))
-# print(criptografar_vigenere("EXEMPLO EXEMPLO", "KEY"))
-# print(descriptografar_vigenere("DIQDI", "KEY"))
