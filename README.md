@@ -40,7 +40,7 @@ Inserindo o texto cifrado e a chave, a aplicação retorna a mensagem original d
 Utilizando o método de Kasiski e análise de frequência da língua, a aplicação tenta estimar a chave original e decifrar a mensagem sem conhecê-la:
 
 <p align="center">
-  <img src="./screenshots/vid1.png" alt="Tela do Ataque por Frequência" width="700">
+  <img src="screenshots/vid1.gif" alt="Tela do Ataque por Frequência" width="700">
 </p>
 
 ### Execução com interface web
