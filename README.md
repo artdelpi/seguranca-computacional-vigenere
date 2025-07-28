@@ -9,6 +9,10 @@ Este projeto implementa uma ferramenta completa para estudo e demonstração pr�
 
 ---
 
+## O que é a Cifra de Vigenère?
+
+A Cifra de Vigenère é um método clássico de criptografia por substituição polialfabética. Utiliza-se uma palavra-chave para aplicar diferentes deslocamentos nas letras da mensagem original, o que dificulta a quebra usando análise de frequência simples. Por muito tempo foi considerada indecifrável, mas hoje é amplamente estudada em disciplinas de segurança da informação pela importância histórica e conceitual.
+
 ## Como executar
 
 ### Criptografia

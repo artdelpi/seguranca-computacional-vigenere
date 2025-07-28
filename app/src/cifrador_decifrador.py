@@ -5,15 +5,15 @@ def gerar_keystream(plaintext: str, key: str) -> str:
     Observação: Tirar o resto pelo tamanho da chave garante que o resultado é um valor 
     entre zero e a chave-1. Isto é, valores válidos de índice pros elementos da chave.
 
-    Parâmetros:
+    Args:
         plaintext (str): O texto a ser cifrado.
         key (str): A chave de Vigenère.
 
-    Retorna:
+    Returns:
         str: O keystream com o mesmo tamanho do plaintext, mantendo os espaços.
     """
     keystream = ""
-    key_index = 0 # Com rigor, na verdade o índice da chave é key_index % len(key)
+    key_index = 0 
 
     for i in range(len(plaintext)):
         if (plaintext[i].isalpha()):
@@ -26,62 +26,55 @@ def gerar_keystream(plaintext: str, key: str) -> str:
 
 def criptografar_vigenere(plaintext: str, key: str) -> str:
     """
-    Criptografa um texto usando a cifra de Vignère. Consiste em deslocar cada caracte-
-    re do plaintext em posições de acordo com o caractere correspondente na keystream.
+    Cada caractere do plaintext é deslocado com base na letra correspondente do keystream,
+    gerando o texto cifrado.
 
-    Parâmetros:
+    Args:
         plaintext (str): O texto a ser cifrado.
         key (str): A chave de Vigenère.
 
-    Retorna:
+    Returns:
         str: O texto cifrado.
     """
     plaintext, key = map(str.upper, [plaintext, key])
     keystream = gerar_keystream(plaintext, key)
-    ciphertext = ""
+    ciphertext = list()
 
-    # Iteração com índice i permite correspondência de caracteres do keystream e plaintext
     for i in range(len(plaintext)):
-        if (plaintext[i] in (" ", ".", ",", ";", "-", "!", "'")):
-            ciphertext += plaintext[i] # Não cifra caracteres especiais e mantém no ciphertext
-        else: 
-            deslocamento = ord(keystream[i]) - ord('A') # Decimal de 'A' é a base de cálculo
-            nova_posicao = ord(plaintext[i]) + deslocamento # Posição do char cifrado na tabela ASCII
+        char = plaintext[i]
+        # Não criptografa caracteres especiais
+        if char in (" ", ".", ",", ";", "-", "!", "'"):
+            ciphertext.append(char)
+        else:
+            desloc = (ord(char) - ord('A') + ord(keystream[i]) - ord('A')) % 26
+            ciphertext.append(chr(ord('A') + desloc))
 
-            # Quando posição passa de 90 (= ord('Z')), volta pra 'A' (-26 posições) e continua deslocamento
-            if (nova_posicao > 90):
-                nova_posicao -= 26 # Volta a mapear uma letra maiúscula
-
-            char_cifrado = chr(nova_posicao)
-            ciphertext += char_cifrado
-    return ciphertext
+    return ''.join(ciphertext)
 
 
 def descriptografar_vigenere(ciphertext:str, key: str) -> str:
     """
-    Descriptografa um ciphertext gerado pela cifra de Vignère. Lógica simples consiste
-    em "deslocar ao contrário". Sabendo que a cifra avançou posições pra cada caracte-
-    re no plaintext de acordo com o keystream, basta desfazer o deslocamento voltando.
+    A descriptografia envolve aplicar o deslocamento inverso ao que foi feito na cifragem,
+    com base no keystream derivado da chave.
 
-    Parâmetros:
+    Args:
         ciphertext (str): O texto cifrado.
         key (str): A chave de Vigenère.
 
-    Retorna:
+    Returns:
         str: O plaintext descriptografado.
     """
     ciphertext, key = map(str.upper, [ciphertext, key])
     keystream = gerar_keystream(ciphertext, key)
-    plaintext = ""
+    plaintext = list()
 
-    for i in range(len(ciphertext)):
-        if (ciphertext[i] in (" ", ".", ",", ";", "-", "!", "'")):
-            plaintext += ciphertext[i] # Não desloca caractere de espaço pra montar a cifra, apenas concatena
+    for i in range(len(ciphertext)): 
+        char = ciphertext[i]
+        # Não descriptografa caracteres especiais
+        if char in (" ", ".", ",", ";", "-", "!", "'"):
+            plaintext.append(char)
         else:
-            deslocamento = ord('A') - ord(keystream[i]) # Deslocamento no sentido contrário
-            nova_posicao = ord(ciphertext[i]) + deslocamento # Posição do char decifrado na tabela ASCII
-            if (nova_posicao < 65):
-                nova_posicao += 26 # Volta a mapear uma letra maiúscula
-            char_decifrado = chr(nova_posicao)
-            plaintext += char_decifrado
-    return plaintext
+            desloc = (ord(char) - ord(keystream[i])) % 26
+            plaintext.append(chr(ord('A') + desloc))
+
+    return ''.join(plaintext)
