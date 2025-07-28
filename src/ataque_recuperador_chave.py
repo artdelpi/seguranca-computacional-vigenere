@@ -1,4 +1,4 @@
-from cifrador_decifrador import criptografar_vigenere, descriptografar_vigenere
+from .cifrador_decifrador import criptografar_vigenere, descriptografar_vigenere
 from collections import Counter
 
 """
@@ -132,10 +132,10 @@ def descobrir_melhor_deslocamento(agrupamento: str, freq_esperada: dict) -> int:
     for desloc in range(26):
         erro = 0
         for letra, freq_esp in freq_esperada.items(): # Pra cada letra
-            # Tenta descriptografar letra cifrada do agrupamento com deslocamento reverso
-            letra_original = chr((ord(letra) - ord('A') + desloc) % 26 + ord('A'))
+            # Criptografa letra do idioma com deslocamento da iteração
+            letra_cifrada = chr((ord(letra) - ord('A') + desloc) % 26 + ord('A'))
             # Frequência observada da letra deslocada no agrupamento
-            freq_obs = (contagem.get(letra_original, 0) / total) * 100
+            freq_obs = (contagem.get(letra_cifrada, 0) / total) * 100
             # Soma o erro
             erro += (freq_obs - freq_esp) ** 2
         # Atualiza o melhor deslocamento, caso haja algum com erro menor
@@ -145,13 +145,13 @@ def descobrir_melhor_deslocamento(agrupamento: str, freq_esperada: dict) -> int:
     return melhor_deslocamento
 
 
-def descobrir_chave_por_frequencia(ciphertext: str, idioma: str, opcao_chave=0) -> str:
+def descobrir_chave_por_frequencia(ciphertext: str, idioma: str, opcao_chave=0) -> tuple[str | None, list]:
     """
     Executa o ataque de análise de frequência usando as etapas:
     1) estima tamanho da chave (Kasiski)
     2) agrupa letras igualmente cifradas pela mesma posição da chave
-    3) pra cada grupo, aplica análise de frequência
-    Por fim, retorna a chave mais provável. O parâmetro opcional permite testar os próximos tamanhos mais prováveis.
+    3) para cada grupo, aplica análise de frequência
+    Retorna a chave mais provável e a lista de tamanhos estimados.
     """
     frequencia_portugues = {
         'A': 14.63, 'B': 1.04, 'C': 3.88, 'D': 4.99, 
@@ -173,8 +173,7 @@ def descobrir_chave_por_frequencia(ciphertext: str, idioma: str, opcao_chave=0) 
         'Y': 1.974, 'Z': 0.074
     }
 
-    # Considera a frequência de letras do idioma selecionado
-    frequencia_idioma = frequencia_portugues if (idioma == "Português") else frequencia_ingles
+    frequencia_idioma = frequencia_portugues if idioma == "Português" else frequencia_ingles
 
     # ============ Início Kasiki ============
     repeticoes = encontrar_repeticoes(ciphertext)
@@ -183,12 +182,18 @@ def descobrir_chave_por_frequencia(ciphertext: str, idioma: str, opcao_chave=0) 
     tamanhos_estimados = estimar_tamanho_chave(divisores)
     # ============ Final  Kasiki ============
 
+    if not tamanhos_estimados or opcao_chave >= len(tamanhos_estimados):
+        return None, tamanhos_estimados  # ← Alteração aqui
+
+    print(f"[DEBUG] tamanhos_estimados = {tamanhos_estimados}")
+    print(f"[DEBUG] opcao_chave = {opcao_chave}")
+
     agrupamentos = agrupar_letras_igualmente_deslocadas(ciphertext, tamanhos_estimados, opcao_chave)
     chave = ''
     
     for agrupamento in agrupamentos:
-        desloc = descobrir_melhor_deslocamento(agrupamento, frequencia_idioma) # Toma o melhor deslocamento pro grupo
-        # A letra_chave é a que foi usada para deslocar
-        letra_chave = chr(desloc + ord('A')) # Obtém a letra da chave pelo deslocamento que ela causou
-        chave += letra_chave # Monta a chave final
-    return chave
+        desloc = descobrir_melhor_deslocamento(agrupamento, frequencia_idioma)
+        letra_chave = chr(desloc + ord('A'))
+        chave += letra_chave
+
+    return chave, tamanhos_estimados  # ← Alteração aqui

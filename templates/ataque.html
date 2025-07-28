@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cifra de Vigenère – Ataque</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Ataque por Frequência</h1>
+
+    <a href="{{ url_for('index') }}">
+        <button style="margin-bottom: 20px;">Voltar para Criptografar/Descriptografar</button>
+    </a>
+
+    <form method="POST">
+        <label>Texto Cifrado:</label>
+        <textarea name="msg_ataque" rows="4" class="form-control" placeholder="Cole aqui o texto cifrado...">{{ msg or "" }}</textarea>
+
+        <label>Idioma da Mensagem:</label>
+        <select name="idioma">
+            <option value="Português" {% if idioma == "Português" %}selected{% endif %}>Português</option>
+            <option value="Inglês" {% if idioma == "Inglês" %}selected{% endif %}>Inglês</option>
+        </select>
+
+        <button name="modo" value="ataque">Usar chave provável</button>
+        <button name="modo" value="proxima_chave">Tentar próxima chave</button>
+
+        {% if chave_estimada %}
+            <h2>Chave estimada</h2>
+            <div class="resultado-box">{{ chave_estimada }}</div>
+        {% endif %}
+
+        {% if resultado %}
+            <h2>Resultado</h2>
+            <div class="resultado-box">{{ resultado }}</div>
+        {% endif %}
+    </form>
+</body>
+</html>

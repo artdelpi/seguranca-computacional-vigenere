@@ -78,14 +78,10 @@ def descriptografar_vigenere(ciphertext:str, key: str) -> str:
         if (ciphertext[i] in (" ", ".", ",", ";", "-", "!", "'")):
             plaintext += ciphertext[i] # Não desloca caractere de espaço pra montar a cifra, apenas concatena
         else:
-            # Sabendo que |x-y| = |y-x|, pegar o deslocamento contrário é inverter a ordem das parcelas
             deslocamento = ord('A') - ord(keystream[i]) # Deslocamento no sentido contrário
             nova_posicao = ord(ciphertext[i]) + deslocamento # Posição do char decifrado na tabela ASCII
-
-            # Quando posição fica abaixo de 65 (= ord('A')), precisa subir 26 posições e continua deslocamento
             if (nova_posicao < 65):
                 nova_posicao += 26 # Volta a mapear uma letra maiúscula
-
             char_decifrado = chr(nova_posicao)
             plaintext += char_decifrado
     return plaintext

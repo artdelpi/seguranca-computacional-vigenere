@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cifra de Vigenère – Criptografar e Descriptografar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Cifra de Vigenère</h1>
+
+    <a href="{{ url_for('ataque') }}">
+        <button style="margin-bottom: 20px;">Ir para Ataque por Frequência</button>
+    </a>
+
+    <form method="POST">
+        <h2>Criptografar</h2>
+        <label>Mensagem:</label>
+        <textarea name="msg_criptografar" rows="4" placeholder="Digite a mensagem...">{{ msg_cript or "" }}</textarea>
+
+        <label>Chave:</label>
+        <input type="text" name="chave_cript" placeholder="Ex: SEGURANCA" value="{{ chave_cript or '' }}">
+
+        <button name="modo" value="criptografar">Criptografar</button>
+
+        {% if resultado_cript %}
+            <div class="resultado-box">{{ resultado_cript }}</div>
+        {% endif %}
+
+        <h2>Descriptografar</h2>
+        <label>Mensagem Cifrada:</label>
+        <textarea name="msg_descriptografar" rows="4" placeholder="Texto cifrado...">{{ msg_descript or "" }}</textarea>
+
+        <label>Chave:</label>
+        <input type="text" name="chave_descript" placeholder="Ex: SEGURANCA" value="{{ chave_descript or '' }}">
+
+        <button name="modo" value="descriptografar">Descriptografar</button>
+
+        {% if resultado_descript %}
+            <div class="resultado-box">{{ resultado_descript }}</div>
+        {% endif %}
+    </form>
+</body>
+</html>
