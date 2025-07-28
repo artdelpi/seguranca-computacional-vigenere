@@ -51,7 +51,7 @@ def encontrar_repeticoes(ciphertext:str, tamanho_grupo=3) -> dict:
     texto_limpo = remover_nao_letras(ciphertext)
     repeticoes = dict()
 
-    for i in range(len(texto_limpo) - (tamanho_grupo+1)):
+    for i in range(len(texto_limpo) - tamanho_grupo + 1):
         grupo = ciphertext[i:i+tamanho_grupo] # Ex: "FWC", "OXO", "ABA"...
 
         if (grupo in repeticoes):

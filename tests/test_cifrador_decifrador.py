@@ -1,4 +1,6 @@
-from app.src.cifrador_decifrador import criptografar_vigenere, descriptografar_vigenere, gerar_keystream
+from app.src.cifrador_decifrador import (
+    criptografar_vigenere, descriptografar_vigenere, gerar_keystream
+)
 
 def test_criptografar_vigenere():
     plaintext = "EXEMPLO" # Letra maiúscula sem espaço
