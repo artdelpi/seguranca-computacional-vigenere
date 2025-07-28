@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 from src.cifrador_decifrador import criptografar_vigenere, descriptografar_vigenere
 from src.ataque_recuperador_chave import descobrir_chave_por_frequencia
 
@@ -54,7 +54,7 @@ def ataque():
             seletor_global["valor"] += 1
 
         seletor = seletor_global["valor"]
-        chave_estimada, tamanhos = descobrir_chave_por_frequencia(msg, idioma, seletor)
+        chave_estimada, _ = descobrir_chave_por_frequencia(msg, idioma, seletor)
 
         if chave_estimada is None:
             fim_de_tentativas = True

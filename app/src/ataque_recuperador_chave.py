@@ -1,15 +1,37 @@
-from .cifrador_decifrador import criptografar_vigenere, descriptografar_vigenere
 from collections import Counter
 
-"""
-Método de Kasiski para estimar o tamanho da chave, seguido de ataque por análise de frequência.
-Kasiki foi demonstrado no vídeo <https://www.youtube.com/watch?v=P4z3jAOzT9I> do relatório.
-"""
+# Frequências de letras no idioma Português (%)
+FREQUENCIA_PT = {
+    'A': 14.63, 'B': 1.04, 'C': 3.88, 'D': 4.99, 
+    'E': 12.57, 'F': 1.02, 'G': 1.30, 'H': 1.28,
+    'I': 6.18, 'J': 0.40, 'K': 0.02, 'L': 2.78,
+    'M': 4.74, 'N': 5.05, 'O': 10.73, 'P': 2.52, 
+    'Q': 1.20, 'R': 6.53, 'S': 7.81, 'T': 4.34,
+    'U': 4.63, 'V': 1.67, 'W': 0.01, 'X': 0.21, 
+    'Y': 0.01, 'Z': 0.47
+}
 
+# Frequências de letras no idioma Inglês (%)
+FREQUENCIA_EN = {
+    'A': 8.167, 'B': 1.492, 'C': 2.782, 'D': 4.253, 
+    'E': 12.702, 'F': 2.228, 'G': 2.015, 'H': 6.094,
+    'I': 6.966, 'J': 0.153, 'K': 0.772, 'L': 4.025,
+    'M': 2.406, 'N': 6.749, 'O': 7.507, 'P': 1.929, 
+    'Q': 0.095, 'R': 5.987, 'S': 6.327, 'T': 9.056,
+    'U': 2.758, 'V': 0.978, 'W': 2.360, 'X': 0.150, 
+    'Y': 1.974, 'Z': 0.074
+}
 
 def remover_nao_letras(plaintext:str) -> str:
     """
-    Remove não-letras e capitaliza.
+    Remove todos os caracteres que não são letras e capitaliza com code golf.
+
+    Args:
+        plaintext (str): Texto de entrada.
+
+    Returns:
+        str: Plaintext com apenas letras maiúsculas.
+
     """
     return "".join([char for char in plaintext if char.isalpha()]).upper()
 
@@ -17,176 +39,185 @@ def remover_nao_letras(plaintext:str) -> str:
 def encontrar_repeticoes(ciphertext:str, tamanho_grupo=3) -> dict:
     """
     Encontra substrings repetidas de tamanho fixo (default=3) e registra suas posições no texto.
-    Utilizado para encontrar espaçamentos que revelam possíveis tamanhos de chave.
-    """
-    repeticoes_por_grupo = dict() # Posições de repetições das substrings no ciphertext (Índice da primeira letra do grupo)
-    ciphertext = remover_nao_letras(ciphertext)
 
-    for i in range(len(ciphertext) - (tamanho_grupo+1)): # Decrementa tamanho_grupo+1 e evita IndexError
-        grupo_selecionado = ciphertext[i:i+tamanho_grupo] # Ex: "FWC", "OXO", "ABA"...
-        if (grupo_selecionado in repeticoes_por_grupo):
-            repeticoes_por_grupo[grupo_selecionado].append(i) # Acrescenta posição à lista de intercorrências
+    Args:
+        ciphertext (str): Texto cifrado original.
+        tamanho_grupo (int): Tamanho das substrings a serem analisadas (default=3).
+
+    Returns:
+        dict: Dicionário onde as chaves são substrings repetidas e os valores são listas com os 
+              índices de ocorrência dessas substrings no texto.
+    """
+    texto_limpo = remover_nao_letras(ciphertext)
+    repeticoes = dict()
+
+    for i in range(len(texto_limpo) - (tamanho_grupo+1)):
+        grupo = ciphertext[i:i+tamanho_grupo] # Ex: "FWC", "OXO", "ABA"...
+
+        if (grupo in repeticoes):
+            repeticoes[grupo].append(i) # Agrega à lista de ocorrências
         else:
-            repeticoes_por_grupo[grupo_selecionado] = [i] # Salva posição da primeira intercorrência
-    
-    for key in list(repeticoes_por_grupo.keys()): # Itera em cada substring chave
-        if (len(repeticoes_por_grupo[key]) == 1):
-            del repeticoes_por_grupo[key] # Remove pares substrings sem repetição
-    return repeticoes_por_grupo
+            repeticoes[grupo] = [i] # Guarda primeira ocorrência
+
+    # Remove substrings que só aparecem uma vez
+    repeticoes = {grupo: pos for grupo, pos in repeticoes.items() if len(pos) > 1}
+
+    return repeticoes
 
 
 def encontrar_espacamentos(repeticoes_por_grupo:dict) -> list:
     """
-    Para cada grupo repetido, calcula as distâncias entre as repetições (espaçamentos) consecutivas.
-    Esses espaçamentos são múltiplos do tamanho da chave, como consta nos vídeos de referência.
+    Para cada grupo repetido, calcula as distâncias entre as repetições de substrings consecutivas.
+    
+    Args:
+        repeticoes_por_grupo (dict): Dicionário onde as chaves são substrings repetidas
+                                     e os valores são listas com as posições de ocorrência.
+
+    Returns:
+        List[int]: Lista de espaçamentos (diferenças entre posições consecutivas).
     """
     espacamentos = list()
 
     for posicoes in repeticoes_por_grupo.values():
         for i in range(len(posicoes) - 1):
-            espacamentos.append(posicoes[i+1]-posicoes[i]) # Ex: [1, 3, 4] -> [2, 1]
+            espacamentos.append(posicoes[i+1]-posicoes[i]) # Ex: [1, 3, 4] ➔ [2, 1]
+
     return espacamentos
 
 
 def encontrar_divisores(espacamentos:list) -> list:
     """
     Encontra os divisores entre 2 e 20 que dividem exatamente cada espaçamento.
-    Esses divisores são os tamanhos de chave possíveis.
+    
+    Args:
+        espacamentos (List[int]): Lista de espaçamentos entre repetições de substrings.
+
+    Returns:
+        List[int]: Lista de divisores possíveis do tamanho da chave.
     """
     divisores = list()
 
     for espacamento in espacamentos:
-        for divisor in range(2, 21): # Verifica divisores/tamanhos de chave de tamanho 2 a 20 (Pula 0 e 1 como divisores)
-            if (espacamento % divisor == 0): # Insere divisor na lista caso divida algum espaçamento específico
+        for divisor in range(2, 21): # Ignora 1 e evita 0
+            if (espacamento % divisor == 0):
                 divisores.append(divisor)
+
     return divisores
 
 
 def estimar_tamanho_chave(divisores:list) -> list:
     """
-    Método Kaneki propõe que o divisor mais comum dos espaçamentos das substrings de três caracteres
-    é a melhor estimativa do tamanho da chave. 
+    Estima os tamanhos mais prováveis da chave de acordo com a frequência dos divisores.
 
-    Retorna uma lista ordenada dos candidatos (tamanhos) mais prováveis.
+    Args:
+        divisores (List[int]): Lista de divisores que aparecem nos espaçamentos entre substrings repetidas.
+
+    Returns:
+        List[int]: Lista ordenada dos tamanhos de chave mais prováveis (do mais comum ao menos comum).
     """
-    # Encontrar divisores mais comuns (possíveis tamanhos de chave)
+    # Contador de frequência manual
     freq_divisor = dict()
-
-    # Monta hashmap com os divisores e suas respectivas frequências
     for divisor in divisores:
         if (divisor not in freq_divisor):
             freq_divisor[divisor] = 1
         else:
             freq_divisor[divisor] += 1
     
-    tamanhos_estimados = list()
-    # Ordena os tamanhos possíveis de chave de acordo com a frequência (Maior -> Menor)
-    for _ in range(len(freq_divisor)):
-        freq_maior = 0
-        tamanho_chave = 0 # Tamanho de chave mais provável por iteração
-        for divisor in freq_divisor:
-            if (freq_divisor[divisor] > freq_maior):
-                tamanho_chave = divisor # Atualiza maior valor temporário
-                freq_maior = freq_divisor[divisor]
-        tamanhos_estimados.append(tamanho_chave) # Divisor mais comum do laço
-        del freq_divisor[tamanho_chave]
-    return tamanhos_estimados
+    # Ordena os divisores por frequência decrescente
+    tamanhos_estimados = sorted(freq_divisor, key=lambda k: freq_divisor[k])
+    return tamanhos_estimados[::-1]
 
 
 def agrupar_letras_igualmente_deslocadas(ciphertext: str, tamanhos_estimados: list, seletor_estimado=0) -> list:
     """
     Monta uma lista com grupos de letras igualmente deslocadas. Cada grupo funciona como uma Cifra de César.
 
-    Exemplo: 
-    - Chave "KEY" com tamanho 3 e ciphertext "AbCdEfGhIjKl"
-    - Grupos decorrentes da cifragem ("A", "d", "G", "j"), ("b", "E", "h", "K") e ("C", "f", "I", "l")
-    - O primeiro grupo foi todo cifrado por "K", o segundo por "E" e o terceiro por "Y"
-    *Obs: Número de agrupamentos = tamanho da chave
-    """
-    agrupamentos_igualmente_deslocados = list()
-    agrupamento = list() # Agrupamento temporário pra iteração
-    tamanho_chave = tamanhos_estimados[seletor_estimado] # Escolhe um tamanho possível de chave
-    ciphertext = remover_nao_letras(ciphertext) # Remove pontuação e espaços: apenas caracteres que foram cifrados
+    Args:
+        ciphertext (str): Texto cifrado.
+        tamanhos_estimados (list): Lista de tamanhos prováveis da chave.
+        seletor_estimado (int): Índice do tamanho escolhido na lista de tamanhos.
 
-    for i in range(tamanho_chave): # Número de agrupamentos equivale ao tamanho da chave
-        # Agrupa as letras cifradas pela mesma parte (mesma letra, mesma posição) da chave
-        # Exemplo de agrupamento: i=0 -> índices 0, 3, 6, 9... se tamanho_chave=3
-        for j in range(i, len(ciphertext), tamanho_chave):
-            agrupamento.append(ciphertext[j])
-        agrupamentos_igualmente_deslocados.append(agrupamento)
-        agrupamento = list() # Reinicializa o agrupamento temporário
-    return agrupamentos_igualmente_deslocados
+    Returns:
+        list[list[str]]: Lista de agrupamentos, onde cada agrupamento contém letras cifradas com a mesma letra da chave.
+    """
+    if seletor_estimado >= len(tamanhos_estimados):
+        raise ValueError("Seletor de tamanho de chave fora do intervalo.")
+
+    ciphertext = remover_nao_letras(ciphertext)
+    tamanho_chave = tamanhos_estimados[seletor_estimado]
+    agrupamentos = list()
+
+    for i in range(tamanho_chave):
+        grupo = [ciphertext[j] for j in range(i, len(ciphertext), tamanho_chave)]
+        agrupamentos.append(grupo)
+
+    return agrupamentos
 
 
 def descobrir_melhor_deslocamento(agrupamento: str, freq_esperada: dict) -> int:
     """
     Calcula o melhor deslocamento (de 0 a 25) pro grupo, comparando a frequência observada 
     com a frequência esperada para o idioma.
-    """
-    total = len(agrupamento) # Total de letras no grupo
-    contagem = Counter(agrupamento) # Frequência observada no agrupamento
-    menor_erro = float('inf') # Inicializa auxiliar
-    melhor_deslocamento = 0 # Inicializa auxiliar
 
+    Args:
+        agrupamento (str): Letras cifradas com o mesmo deslocamento.
+        freq_esperada (dict[str, float]): Frequência percentual das letras do idioma.
+
+    Retorna:
+        int: Deslocamento mais provável entre 0 e 25.  
+    """
+    total, contagem, menor_erro, melhor_deslocamento = (
+        len(agrupamento), # Total de letras no grupo
+        Counter(agrupamento), # Frequência observada no agrupamento
+        float('inf'),
+        0
+    )
+    
     # Testa todos os possíveis deslocamentos (de 0 a 25)
     for desloc in range(26):
         erro = 0
-        for letra, freq_esp in freq_esperada.items(): # Pra cada letra
-            # Criptografa letra do idioma com deslocamento da iteração
+        for letra, freq_esp in freq_esperada.items():
+            # Criptografa letra do idioma com deslocamento
             letra_cifrada = chr((ord(letra) - ord('A') + desloc) % 26 + ord('A'))
-            # Frequência observada da letra deslocada no agrupamento
-            freq_obs = (contagem.get(letra_cifrada, 0) / total) * 100
-            # Soma o erro
+            freq_obs = (contagem.get(letra_cifrada, 0) / total) * 100 
             erro += (freq_obs - freq_esp) ** 2
+
         # Atualiza o melhor deslocamento, caso haja algum com erro menor
         if (erro < menor_erro):
             menor_erro = erro
             melhor_deslocamento = desloc
+
     return melhor_deslocamento
 
 
-def descobrir_chave_por_frequencia(ciphertext: str, idioma: str, opcao_chave=0) -> tuple[str | None, list]:
+def descobrir_chave_por_frequencia(ciphertext: str, idioma: str, opcao_chave=0) -> tuple:
     """
-    Executa o ataque de análise de frequência usando as etapas:
-    1) estima tamanho da chave (Kasiski)
-    2) agrupa letras igualmente cifradas pela mesma posição da chave
-    3) para cada grupo, aplica análise de frequência
-    Retorna a chave mais provável e a lista de tamanhos estimados.
+    Executa o ataque de análise de frequência na cifra de Vigenère.
+
+    Etapas:
+    1) Estima o tamanho da chave com base no método de Kasiski.
+    2) Agrupa letras cifradas pela mesma posição relativa na chave.
+    3) Aplica análise de frequência com base no idioma pra cada grupo.
+
+    Parâmetros:
+        ciphertext (str): Texto cifrado.
+        idioma (str): Idioma esperado do texto original ('Português' ou 'Inglês').
+        opcao_chave (int): Índice do tamanho estimado da chave a ser testado.
+
+    Retorna:
+        tuple[str, list[int]]: A chave mais provável e a lista ordenada dos tamanhos de chave estimados.
     """
-    frequencia_portugues = {
-        'A': 14.63, 'B': 1.04, 'C': 3.88, 'D': 4.99, 
-        'E': 12.57, 'F': 1.02, 'G': 1.30, 'H': 1.28,
-        'I': 6.18, 'J': 0.40, 'K': 0.02, 'L': 2.78,
-        'M': 4.74, 'N': 5.05, 'O': 10.73, 'P': 2.52, 
-        'Q': 1.20, 'R': 6.53, 'S': 7.81, 'T': 4.34,
-        'U': 4.63, 'V': 1.67, 'W': 0.01, 'X': 0.21, 
-        'Y': 0.01, 'Z': 0.47
-    }
+    frequencia_idioma = FREQUENCIA_PT if idioma == "Português" else FREQUENCIA_EN
 
-    frequencia_ingles = {
-        'A': 8.167, 'B': 1.492, 'C': 2.782, 'D': 4.253, 
-        'E': 12.702, 'F': 2.228, 'G': 2.015, 'H': 6.094,
-        'I': 6.966, 'J': 0.153, 'K': 0.772, 'L': 4.025,
-        'M': 2.406, 'N': 6.749, 'O': 7.507, 'P': 1.929, 
-        'Q': 0.095, 'R': 5.987, 'S': 6.327, 'T': 9.056,
-        'U': 2.758, 'V': 0.978, 'W': 2.360, 'X': 0.150, 
-        'Y': 1.974, 'Z': 0.074
-    }
-
-    frequencia_idioma = frequencia_portugues if idioma == "Português" else frequencia_ingles
-
-    # ============ Início Kasiki ============
+    # ============ Início Kasiski ============
     repeticoes = encontrar_repeticoes(ciphertext)
     espacamentos = encontrar_espacamentos(repeticoes)
     divisores = encontrar_divisores(espacamentos)
     tamanhos_estimados = estimar_tamanho_chave(divisores)
-    # ============ Final  Kasiki ============
+    # ============ Final  Kasiski ============
 
     if not tamanhos_estimados or opcao_chave >= len(tamanhos_estimados):
-        return None, tamanhos_estimados  # ← Alteração aqui
-
-    print(f"[DEBUG] tamanhos_estimados = {tamanhos_estimados}")
-    print(f"[DEBUG] opcao_chave = {opcao_chave}")
+        return None, tamanhos_estimados
 
     agrupamentos = agrupar_letras_igualmente_deslocadas(ciphertext, tamanhos_estimados, opcao_chave)
     chave = ''
@@ -196,4 +227,4 @@ def descobrir_chave_por_frequencia(ciphertext: str, idioma: str, opcao_chave=0) 
         letra_chave = chr(desloc + ord('A'))
         chave += letra_chave
 
-    return chave, tamanhos_estimados  # ← Alteração aqui
+    return chave, tamanhos_estimados
