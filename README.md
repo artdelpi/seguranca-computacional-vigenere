@@ -1,6 +1,6 @@
-# Cifra de Vigenère – Segurança Computacional (CIC0201)
+# Cifra de Vigenère: Segurança Computacional (CIC0201)
 
-Este projeto implementa uma ferramenta completa para estudo e demonstração prática da **cifra de Vigenère**, no contexto da disciplina **CIC0201 – Segurança Computacional**, com:
+Este projeto implementa uma ferramenta completa para estudo e demonstração prática da **cifra de Vigenère**, no contexto da disciplina **CIC0201 - Segurança Computacional**, com:
 
 - Cifrador e decifrador com chave repetitiva  
 - Ataque por análise de frequência com **método de Kasiski**  
@@ -109,9 +109,9 @@ pip install flask pytest
 
 ## Referências
 
-- [Kasiski Examination – Wikipedia](https://en.wikipedia.org/wiki/Kasiski_examination)
+- [Kasiski Examination - Wikipedia](https://en.wikipedia.org/wiki/Kasiski_examination)
 - Frequência de letras em [Português](https://pt.wikipedia.org/wiki/Frequ%C3%AAncia_das_letras)
 - Frequência de letras em [Inglês](https://en.wikipedia.org/wiki/Letter_frequency)
-- Aula e vídeo da disciplina CIC0201 – Universidade de Brasília
+- Aula e vídeo da disciplina CIC0201 - Universidade de Brasília
 
 ---
